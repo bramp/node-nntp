@@ -16,6 +16,7 @@ var tls = require('tls'),
     reGroup = /^(\d+)\s+(\d+)\s+(\d+)\s/,
     reHdr = /^([^:]+):\s(.+)?$/,
     reHdrFold = /^\s+(.+)$/,
+    reXhdr = /^(\d+)\s+(.*)$/,
     respsML = [100, 101, 215, 220, 221, 222, 224, 225, 230, 231],
     respsHaveArgs = [111, 211, 220, 221, 222, 223, 401],
     bytesCRLF = new Buffer([13, 10]),
@@ -566,6 +567,25 @@ NNTP.prototype.newNews = function(search, date8, time6, cb) {
       cb(undefined, list);
     }
   );
+};
+
+NNTP.prototype.xhdr = function(header, range, cb) {
+  var self = this;
+  this._send('XHDR', header + ' ' + range, function(err, code, r, type) {
+    if (err)
+      return cb(err);
+    var list = self._buffer.split(reCRLF);
+    list.shift(); // remove initial response line
+    for (var i = 0, len = list.length; i < len; ++i) {
+      var m = reXhdr.exec(list[i]);
+      if (!m) {
+        console.log(list[i]);
+      }
+      // article number, header value
+      list[i] = [ parseInt(m[1]), m[2] ];
+    }
+    cb(undefined, list);
+  });
 };
 
 NNTP.prototype.groups = function(search, cb) {
