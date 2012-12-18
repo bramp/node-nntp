@@ -691,12 +691,11 @@ NNTP.prototype._send = function(cmd, params, cb, raw) {
     this._queue.push({ cmd: cmd, params: params, cb: cb });
   if (!this._curReq && this._queue.length) {
     this._curReq = this._queue.shift();
-    this._socket.write(this._curReq.cmd);
+    var line = this._curReq.cmd;
     if (this._curReq.params !== undefined) {
-      this._socket.write(' ');
-      this._socket.write(''+this._curReq.params);
+      line += ' ' + this._curReq.params;
     }
-    this._socket.write(bytesCRLF);
+    this._socket.write(line + bytesCRLF);
   }
 };
 
